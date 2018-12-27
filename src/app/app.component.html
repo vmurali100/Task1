@@ -1,10 +1,30 @@
 <div fxFlex="600px" fxFlex.xs="100" fxFlexOffset.xs="0" fxFlexOffset="calc(50% - 300px)" fxLayout="column" style="padding: 10px;">
   <mat-form-field>
-    <input [formControl]="autoCompleteControl" type="text" placeholder="Pick one" aria-label="Number" matInput [matAutocomplete]="auto">
-    <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete">
-      <mat-option *ngFor="let item of githubAutoComplete$ | async; let index = index" [value]="item.name">
+    <input [formControl]="country" type="text" placeholder="Select Country" matInput [matAutocomplete]="auto">
+    <mat-autocomplete  #auto="matAutocomplete">
+      <mat-option *ngFor="let item of countryList | async; let index = index" [value]="item.name" (onSelectionChange)="getStateList(item.id)">
         {{ item.name | titlecase}}
       </mat-option>
     </mat-autocomplete>
   </mat-form-field>
+  <mat-form-field *ngIf="isState">
+    <input [formControl]="stateName" type="text" placeholder="Select State" matInput [matAutocomplete]="state">
+    <mat-autocomplete  #state="matAutocomplete">
+      <mat-option *ngFor="let item of stateList | async; let index = index" [value]="item.name" (onSelectionChange)="getCityList(item.id)">
+        {{ item.name | titlecase}}
+      </mat-option>
+    </mat-autocomplete>
+  </mat-form-field>
+
+  <mat-form-field *ngIf="isCity">
+    <input [formControl]="cityName" type="text" placeholder="Select City" matInput [matAutocomplete]="city">
+    <mat-autocomplete  #city="matAutocomplete">
+      <mat-option *ngFor="let item of cityList | async; let index = index" [value]="item.name" (onSelectionChange)="getCityList(item.id)">
+        {{ item.name | titlecase}}
+      </mat-option>
+    </mat-autocomplete>
+  </mat-form-field>
+
 </div>
+
+

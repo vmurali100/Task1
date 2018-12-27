@@ -1,16 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { Items, Item, GithubResponse } from './interface';
-import { GithubService } from './services/github.service';
-import { Observable, observable, of } from 'rxjs';
+import { CommonService } from './services/common.service';
+import { Observable, of } from 'rxjs';
 import { FormControl } from '@angular/forms';
 import {
   startWith,
   map,
-  debounceTime,
-  mergeMapTo,
-  mergeMap,
   switchMap,
-  catchError
 } from 'rxjs/operators';
 
 @Component({
@@ -19,34 +14,61 @@ import {
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  public githubAutoComplete$: Observable<Items> = null;
-  public autoCompleteControl = new FormControl();
+  public countryList: Observable<any> = null;
+  public stateList: Observable<any> = null;
+  public cityList: Observable<any> = null;
 
-  constructor(private githubService: GithubService) {}
+  public country = new FormControl();
+  public stateName = new FormControl();
+  public cityName = new FormControl();
 
-  lookup(value: string): Observable<Items> {
-    return this.githubService.search(value.toLowerCase()).pipe(
-      // map the item property of the github results as our return object
-      map(results => results.items),
-      // catch errors
-      catchError(_ => {
-        return of(null);
+  public isState = false;
+  public isCity = false;
+  constructor(private commonService: CommonService) {}
+
+  lookup(value, id , type): Observable<any> {
+    return this.commonService.search(value.toLowerCase(), id , type).pipe(
+      map(results => results)
+    );
+  }
+
+  getStateList(id) {
+   this.isState = true;
+   this.stateList = this.stateName.valueChanges.pipe(
+     startWith(''),
+     switchMap(value => {
+       if (value !== '') {
+         return this.lookup(value, id, 'acState');
+       } else {
+         return of(null);
+       }
+     })
+
+   );
+  }
+
+  getCityList(id){
+    this.isCity = true ;
+    this.cityList = this.cityName.valueChanges.pipe(
+      startWith(''),
+      switchMap(value => {
+        if (value !== '') {
+          return this.lookup(value, id, 'acCity');
+        } else {
+          return of(null);
+        }
       })
+
     );
   }
 
   ngOnInit() {
-    this.githubAutoComplete$ = this.autoCompleteControl.valueChanges.pipe(
+    this.countryList = this.country.valueChanges.pipe(
       startWith(''),
-      // delay emits
-      debounceTime(300),
-      // use switch map so as to cancel previous subscribed events, before creating new once
       switchMap(value => {
         if (value !== '') {
-          // lookup from github
-          return this.lookup(value);
+          return this.lookup(value, null, 'acCountry');
         } else {
-          // if no value is pressent, return null
           return of(null);
         }
       })
